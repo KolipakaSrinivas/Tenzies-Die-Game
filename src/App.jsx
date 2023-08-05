@@ -1,12 +1,26 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import "./App.css";
 import Die from "./component/Die";
 import { nanoid } from "nanoid";
+import Confetti from 'react-confetti'
 
 function App() {
   const [dice, setDice] = useState(allNewDice());
+  const [tenzies,setTenzies] =useState(false)
 
-  function genarateDie() {
+
+  useEffect(()=>{
+   const isheld = dice.every(die=>die.isHeld)
+   const firstValue = dice[0].value
+
+   if(isheld && firstValue) {
+     setTenzies(true)
+    console.log("you win!")
+   }
+
+  },[dice])
+
+  function generateNewDie() {
     return {
       value: Math.ceil(Math.random() * 6),
       isHeld: false,
@@ -17,7 +31,7 @@ function App() {
   function allNewDice() {
     const array = [];
     for (let i = 0; i < 10; i++) {
-      array.push(genarateDie());
+      array.push(generateNewDie());
     }
 
     return array;
@@ -30,9 +44,16 @@ function App() {
   }
 
   function rollDice() {
-    setDice((oldState) =>
-      oldState.map((die) => (die.isHeld == true ? die : genarateDie()))
-    );
+    if(!tenzies) {
+      setDice(oldDice => oldDice.map(die => {
+          return die.isHeld ? 
+              die :
+              generateNewDie()
+      }))
+  } else {
+      setTenzies(false)
+      setDice(allNewDice())
+  }
   }
 
   const dieElements = dice.map((num) => (
@@ -53,8 +74,9 @@ function App() {
       </p>
       <div className="dice-container">{dieElements}</div>
       <button onClick={rollDice} className="roll-dice">
-        Roll
+        {tenzies == true ? 'New Game' : 'Roll'}
       </button>
+      {tenzies&& <Confetti/>}
     </main>
   );
 }
